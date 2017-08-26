@@ -1,10 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"os"
+)
 
 func Bootstrap() {
 	LoadApplicationDefaultConfigValues()
 	ParseFlags()
+
+	if flag_show_help {
+		ShowHelp()
+		os.Exit(1)
+	}
 
 	var configFileExists bool = ConfigExists()
 	if !configFileExists {
@@ -16,5 +23,4 @@ func Bootstrap() {
 	}
 
 	ParseConfig()
-	fmt.Println(APPLICATION_CONFIG_SETTINGS)
 }
