@@ -8,7 +8,7 @@ func Bootstrap() {
 	LoadApplicationDefaultConfigValues()
 	ParseFlags()
 
-	if flag_show_help {
+	if FLAG_SHOW_HELP {
 		ShowHelp()
 		os.Exit(1)
 	}

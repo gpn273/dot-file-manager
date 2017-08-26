@@ -17,7 +17,7 @@ type ConfigSettings struct {
 }
 
 func ConfigGetFilePath() string  {
-	var configFile string = flag_config_file
+	var configFile string = FLAG_CONFIG_FILE
 	empty := isEmpty(configFile)
 
 	if empty {
@@ -28,11 +28,7 @@ func ConfigGetFilePath() string  {
 }
 
 func ConfigExists() bool {
-	if _, err := os.Stat(ConfigGetFilePath()); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
+	return pathExists(ConfigGetFilePath())
 }
 
 func ParseConfig() {
