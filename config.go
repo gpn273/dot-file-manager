@@ -1,46 +1,41 @@
 package main
 
 import (
-	"os"
 	"encoding/json"
-	"path"
+	"os"
 )
 
+type GitAuthSettings struct {
+	PrivateKey string `json:"private_key"`
+	UserName   string `json:"user_name"`
+	Password   string `json:"password"`
+}
+
 type GitSettings struct {
-	Remote string `json:"remote"`
-	Branch string `json:"branch"`
+	Remote     string `json:"remote"`
+	RemoteName string `json:"remote_name"`
+	Branch     string `json:"branch"`
+	Auth       GitAuthSettings `json:"auth"`
 }
 
 type ConfigSettings struct {
-	Git GitSettings `json:"git"`
-	Backup bool `json:"backup"`
-}
-
-func ConfigGetFilePath() string  {
-	var configFile string = flag_config_file
-	empty := isEmpty(configFile)
-
-	if empty {
-		configFile = path.Join(CONFIG_DEFAULT_FILE_LOCATION, CONFIG_DEFAULT_FILE_NAME)
-	}
-
-	return configFile
+	Git        GitSettings `json:"git"`
+	Backup     bool `json:"backup"`
+	BackupPath string `json:"backup_path"`
+	Links      []string `json:"links"`
+	Sources []string `json:"sources"`
 }
 
 func ConfigExists() bool {
-	if _, err := os.Stat(ConfigGetFilePath()); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
+	return pathExists(CONFIG_DEFAULT_FILE_NAME)
 }
 
 func ParseConfig() {
-	configFile, err := os.Open(ConfigGetFilePath())
+	configFile, err := os.Open(CONFIG_DEFAULT_FILE_NAME)
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to open config file: " + err.Error(),
-			Severity: "Error",
+			Message:   "Unable to open config file: " + err.Error(),
+			Severity:  "Error",
 			Terminate: true,
 		})
 	}
@@ -49,9 +44,9 @@ func ParseConfig() {
 	var settings ConfigSettings
 	if err = jsonParser.Decode(&settings); err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to parse json file " + ConfigGetFilePath(),
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to parse json file " + CONFIG_DEFAULT_FILE_NAME,
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
