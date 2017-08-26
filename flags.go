@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"path"
 	"fmt"
 )
 
@@ -13,7 +12,7 @@ var (
 )
 
 func ParseFlags() {
-	flag.StringVar(&flag_config_file, "config-file", path.Join(CONFIG_DEFAULT_FILE_LOCATION, CONFIG_DEFAULT_FILE_NAME), "DotFile Manager configuration file")
+	flag.StringVar(&flag_config_file, "config-file", CONFIG_DEFAULT_FILE_NAME, "DotFile Manager configuration file")
 	flag.BoolVar(&flag_config_file_force_create, "config-file-force-create", false, "Forcefully create a configuration file")
 	flag.BoolVar(&flag_show_help, "help", false, "Show help information")
 
