@@ -2,102 +2,104 @@ package main
 
 import (
 	"gopkg.in/src-d/go-git.v4"
-	"fmt"
-	"golang.org/x/crypto/ssh"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
 	gitssh "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
-	"io/ioutil"
+	"os"
 )
 
 func DotFilesDirectoryExists() bool {
-	return pathExists(CONFIG_DOTFILES_LOCATION)
+	return pathExists(CONFIG_DOT_FILES_LOCATION)
 }
 
-func GitGetAuth() *gitssh.PublicKeys {
-	privateKey, err := ioutil.ReadFile(APPLICATION_CONFIG_SETTINGS.Git.PrivateKey)
-	if err != nil {
-		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to open private key file",
-			Severity: "Error",
-			Error: err,
-			Terminate: true,
-		})
+func GitGetAuth() transport.AuthMethod {
+	if !isEmpty(APPLICATION_CONFIG_SETTINGS.Git.Auth.PrivateKey) {
+		ConsoleWrite(ConsoleInterface{Message: "Using Private Key authentication", Severity: "Debug"})
+
+		authKey, err := gitssh.NewPublicKeysFromFile("git", APPLICATION_CONFIG_SETTINGS.Git.Auth.PrivateKey, "")
+		if err != nil {
+			panic(err)
+		}
+
+		return authKey
 	}
 
-	signer, err := ssh.ParsePrivateKey(privateKey)
-	if err != nil {
-		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to parse private key",
-			Severity: "Error",
-			Error: err,
-			Terminate: true,
-		})
+	ConsoleWrite(ConsoleInterface{Message: "Using User and Password authentication", Severity: "Debug"})
+	return &gitssh.Password{
+		User: APPLICATION_CONFIG_SETTINGS.Git.Auth.UserName,
+		Pass: APPLICATION_CONFIG_SETTINGS.Git.Auth.Password,
 	}
-
-	return &gitssh.PublicKeys{User: APPLICATION_CONFIG_SETTINGS.Git.User, Signer: signer}
 }
 
 func GitContext() *git.Repository {
 	if !DotFilesDirectoryExists() {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Cloning repository into " + CONFIG_DOTFILES_LOCATION + " as it could not be found",
-			Severity: "Info",
-			Error: nil,
+			Message:   "Cloning repository into " + CONFIG_DOT_FILES_LOCATION + " as it could not be found",
+			Severity:  "Info",
+			Error:     nil,
 			Terminate: false,
 		})
 
 		GitClone()
 	}
 
-	r, err := git.PlainOpen(CONFIG_DOTFILES_LOCATION)
+	r, err := git.PlainOpen(CONFIG_DOT_FILES_LOCATION)
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to open dotfiles repository",
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to open dotfiles repository",
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
+
+	r.Fetch(&git.FetchOptions{
+		RemoteName: APPLICATION_CONFIG_SETTINGS.Git.RemoteName,
+		Auth: GitGetAuth(),
+		Progress: os.Stdout,
+	})
 
 	return r
 }
 
 func GitClone() {
-	_, err := git.PlainClone(CONFIG_DOTFILES_LOCATION, false, &git.CloneOptions{
-		URL: APPLICATION_CONFIG_SETTINGS.Git.Remote,
-		Auth: GitGetAuth(),
+	_, err := git.PlainClone(CONFIG_DOT_FILES_LOCATION, false, &git.CloneOptions{
+		URL:        APPLICATION_CONFIG_SETTINGS.Git.Remote,
+		RemoteName: APPLICATION_CONFIG_SETTINGS.Git.RemoteName,
+		Auth:       GitGetAuth(),
+		Progress:   os.Stdout,
 	})
 
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to clone repository",
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to clone repository",
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
 }
 
 func GitWorkingTree(r *git.Repository) *git.Worktree {
-	worktree, err := r.Worktree()
+	workTree, err := r.Worktree()
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to open repository working tree",
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to open repository working tree",
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
 
-	return worktree
+	return workTree
 }
 
 func isGitClean(r *git.Worktree) bool {
 	status, err := r.Status()
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to determine repository status",
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to determine repository status",
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
@@ -108,25 +110,29 @@ func isGitClean(r *git.Worktree) bool {
 func GitUpdate() {
 	ctx := GitContext()
 	worktree := GitWorkingTree(ctx)
-	fmt.Println(worktree)
 
 	if !isGitClean(worktree) {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Dotfiles repository has been left in an unclean stat, ensure working tree is clean before progressing",
-			Severity: "Error",
-			Error: nil,
+			Message:   "Dotfiles repository has been left in an unclean stat, ensure working tree is clean before progressing",
+			Severity:  "Error",
+			Error:     nil,
 			Terminate: true,
 		})
 	}
 
-	if err := worktree.Pull(&git.PullOptions{
-		Auth: GitGetAuth(),
-	}); err != nil {
+	remotes, err := ctx.Remotes()
+	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to update repository",
-			Severity: "Error",
-			Error: err,
+			Message:   "Unable to determine the repositories remote",
+			Severity:  "Error",
+			Error:     err,
 			Terminate: true,
 		})
 	}
+
+	worktree.Pull(&git.PullOptions{
+		RemoteName: remotes[0].Config().Name,
+		Auth:       GitGetAuth(),
+		Progress:   os.Stdout,
+	})
 }

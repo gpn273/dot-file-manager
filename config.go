@@ -6,11 +6,17 @@ import (
 	"path"
 )
 
+type GitAuthSettings struct {
+	PrivateKey string `json:"private_key"`
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
+}
+
 type GitSettings struct {
 	Remote string `json:"remote"`
+	RemoteName string `json:"remote_name"`
 	Branch string `json:"branch"`
-	User string `json:"user"`
-	PrivateKey string `json:"private_key"`
+	Auth GitAuthSettings `json:"auth"`
 }
 
 type ConfigSettings struct {
@@ -19,14 +25,7 @@ type ConfigSettings struct {
 }
 
 func ConfigGetFilePath() string  {
-	var configFile string = FLAG_CONFIG_FILE
-	empty := isEmpty(configFile)
-
-	if empty {
-		configFile = path.Join(CONFIG_DEFAULT_FILE_LOCATION, CONFIG_DEFAULT_FILE_NAME)
-	}
-
-	return configFile
+	return path.Join(CONFIG_DEFAULT_FILE_LOCATION, CONFIG_DEFAULT_FILE_NAME)
 }
 
 func ConfigExists() bool {
