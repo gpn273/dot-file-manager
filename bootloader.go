@@ -17,7 +17,7 @@ func Bootstrap() {
 	var configFileExists bool = ConfigExists()
 	if !configFileExists {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Config does not exist, please create a " + ConfigGetFilePath(),
+			Message: "Config does not exist, please create a " + CONFIG_DEFAULT_FILE_NAME,
 			Severity: "Error",
 			Terminate: true,
 		})
