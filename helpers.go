@@ -13,3 +13,7 @@ func pathExists(s string) bool {
 
 	return true
 }
+
+func isEmpty(s string) bool {
+	return len(s) == 0
+}

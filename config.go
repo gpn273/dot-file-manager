@@ -9,6 +9,8 @@ import (
 type GitSettings struct {
 	Remote string `json:"remote"`
 	Branch string `json:"branch"`
+	User string `json:"user"`
+	PrivateKey string `json:"private_key"`
 }
 
 type ConfigSettings struct {

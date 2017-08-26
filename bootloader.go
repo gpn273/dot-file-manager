@@ -7,6 +7,7 @@ import (
 func Bootstrap() {
 	LoadApplicationDefaultConfigValues()
 	ParseFlags()
+	ParseArgs()
 
 	if FLAG_SHOW_HELP {
 		ShowHelp()
