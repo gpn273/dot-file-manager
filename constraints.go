@@ -21,5 +21,5 @@ var (
 func LoadApplicationDefaultConfigValues() {
 	CONFIG_DEFAULT_FILE_LOCATION = os.Getenv("HOME")
 	CONFIG_DOT_FILES_LOCATION = path.Join(CONFIG_DEFAULT_FILE_LOCATION, "/.dotfiles/")
-	CONFIG_DEFAULT_FILE_NAME = path.Join(CONFIG_DEFAULT_FILE_LOCATION, "/.dotconfig")
+	CONFIG_DEFAULT_FILE_NAME = path.Join(CONFIG_DEFAULT_FILE_LOCATION, "/.dotconfig.json")
 }

@@ -14,7 +14,7 @@ type ConsoleInterface struct {
 }
 
 func ConsoleWrite(c ConsoleInterface) {
-	if strings.ToLower(c.Severity) == "debug" && !FLAG_VERBOSE {
+	if strings.ToLower(c.Severity) == "debug" && !*FLAG_VERBOSE {
 		return
 	}
 

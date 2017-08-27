@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"io"
+	"os"
 )
 
 func pathExists(s string) bool {
@@ -25,8 +25,8 @@ func CopyFile(originalFile, destFile string) {
 	srcFile, err := os.Open(originalFile)
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to copy file",
-			Error: err,
+			Message:   "Unable to copy file",
+			Error:     err,
 			Terminate: true,
 		})
 	}
@@ -35,8 +35,8 @@ func CopyFile(originalFile, destFile string) {
 	destCtxFile, err := os.Create(destFile) // creates if file doesn't exist
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Unable to create destination file",
-			Error: err,
+			Message:   "Unable to create destination file",
+			Error:     err,
 			Terminate: true,
 		})
 	}
@@ -45,8 +45,8 @@ func CopyFile(originalFile, destFile string) {
 	_, err = io.Copy(destCtxFile, srcFile) // check first var for number of bytes copied
 	if err != nil {
 		ConsoleWrite(ConsoleInterface{
-			Message: "Failed to copy file contents to new location",
-			Error: err,
+			Message:   "Failed to copy file contents to new location",
+			Error:     err,
 			Terminate: true,
 		})
 	}

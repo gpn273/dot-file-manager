@@ -109,9 +109,9 @@ func isGitClean(r *git.Worktree) bool {
 
 func GitUpdate() {
 	ctx := GitContext()
-	worktree := GitWorkingTree(ctx)
+	workTree := GitWorkingTree(ctx)
 
-	if !isGitClean(worktree) {
+	if !isGitClean(workTree) {
 		ConsoleWrite(ConsoleInterface{
 			Message:   "Dotfiles repository has been left in an unclean stat, ensure working tree is clean before progressing",
 			Severity:  "Error",
@@ -130,7 +130,7 @@ func GitUpdate() {
 		})
 	}
 
-	worktree.Pull(&git.PullOptions{
+	workTree.Pull(&git.PullOptions{
 		RemoteName: remotes[0].Config().Name,
 		Auth:       GitGetAuth(),
 		Progress:   os.Stdout,
